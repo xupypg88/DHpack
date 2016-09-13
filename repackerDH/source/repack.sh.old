@@ -1,0 +1,89 @@
+#!/bin/bash
+
+#bin file name - flash.bin
+flashfile=$1
+
+WORKPATH="TMP${flasfile}"
+
+quit() {
+	clear
+	echo "Done. No errors."
+	exit 0
+}
+
+bin2zip() {
+	mv ${FWpath}/* ${FWpath}/${BINname}.zip
+	echo "PK" | dd of=${FWpath}/${BINname}.zip conv=notrunc
+}
+
+zip2bin() 	{
+	echo "DH" | dd of=${FWpath}/${BINname}.zip conv=notrunc
+	mv ${FWpath}/${BINname}.zip ${FWpath}/flash.bin
+}
+
+error() {
+	clear
+	echo "Error:"
+	case $1 in
+		2) 
+			echo "Wrong FS type!"
+		;;
+		*)
+			echo "Unknown error"
+		;;
+	esac
+	read -n 1 -s key
+	
+	if [ $key == "x" ]; then	#if "x" then end 
+			exit 0
+	fi
+}
+
+unpack_img() {
+	
+	dd if=${TMPimgs}/$1-x.cramfs.img of=${TMPimgs}/$1-x.cramfs.cut bs=8 skip=8
+	FSinfo=`file ${TMPimgs}/$1-x.cramfs.cut | cut -f2 -d' '`
+	case $FSinfo in
+		"Squashfs")
+			unsquashfs -d ${TMPdirs}/$1 ${TMPimgs}/$1-x.cramfs.cut
+		;;
+		"Linux")
+			cramfsck -x ${TMPdirs}/$1 ${TMPimgs}/$1-x.cramfs.cut
+		;;
+		*)
+			error 4
+		;;
+	esac
+	
+}
+
+mainmenu() {
+	clear	
+	echo "Please select action:"
+	echo "1. Pack"
+	echo "2. Unpack"
+	echo "3. Exit(default)"
+	echo "Choice:"
+	read -n 1 -s act
+		
+	case $act in
+		1)
+			#${MODpath}/pack.sh all ${type}
+			zip2bin
+		;;
+		2)
+			bin2zip
+			rm -rf ${TMPimgs}/*
+			unzip ${FWpath}/${BINname}.zip -d ${TMPimgs}/
+		;;
+		3)
+			quit
+		;;
+		*)
+			quit
+		;;
+	esac
+}
+
+mainmenu
+
