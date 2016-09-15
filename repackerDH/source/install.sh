@@ -1,4 +1,5 @@
 #!/bin/bash
+chmod -R a+x *
 sudo cp -f repack.sh /usr/bin/DHpack
 sudo cp -f modules/cramfsck /usr/bin/cramfsck
 sudo cp -f modules/mkcramfs /usr/bin/mkcramfs
