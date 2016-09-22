@@ -9,3 +9,4 @@ def MainMenu ():
     un = unpacker()    
     print(un.workpath)
 MainMenu()
+print "hello"
